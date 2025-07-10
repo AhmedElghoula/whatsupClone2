@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { BackHandler, Alert, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableHighlight } from "react-native";
+import {
+  BackHandler,
+  Alert,
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableHighlight,
+  View,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { app, supabase } from "../../config";
-import { getDatabase, get, ref, set, child, serverTimestamp } from "firebase/database";  // Firebase v9+ imports
-import { initializeApp } from "firebase/app";  // Ensure Firebase initialization
+import { getDatabase, get, ref, set, serverTimestamp } from "firebase/database"; // Firebase v9+ imports
+import { getAuth, signOut } from "firebase/auth";
 
 const database = getDatabase(app);
+const auth = getAuth(app);
 
 export default function MyProfile(props) {
   const currentId = props.route.params.currentId;
@@ -13,57 +24,84 @@ export default function MyProfile(props) {
   const isProfileSaved = props.route.params.isProfileSaved;
 
   const [nom, setNom] = useState("");
-  const [pseudo, setpseudo] = useState("");
+  const [pseudo, setPseudo] = useState("");
   const [telephone, setTelephone] = useState("");
-  const [isDefaultImage, setisDefaultImage] = useState(true);
+  const [isDefaultImage, setIsDefaultImage] = useState(true);
   const [uriLocalImage, setUriLocalImage] = useState(null);
   const [isSaved, setIsSaved] = useState(false); // Track if profile is saved
 
   // Fetch user data from Firebase
   useEffect(() => {
-    // Define the reference to the user's profile
     const ref_unprofil = ref(database, `/lesprefix/unprofil_${currentId}`);
 
-    get(ref_unprofil).then((snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setNom(data.nom || "");
-        setpseudo(data.pseudo || "");
-        setTelephone(data.telephone || "");
-        if (data.urlImage) {
-          setUriLocalImage(data.urlImage);
-          setisDefaultImage(false);
+    get(ref_unprofil)
+      .then((snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setNom(data.nom || "");
+          setPseudo(data.pseudo || "");
+          setTelephone(data.telephone || "");
+          if (data.urlImage) {
+            setUriLocalImage(data.urlImage);
+            setIsDefaultImage(false);
+          }
         }
-      }
-    }).catch((error) => {
-      console.error("Error fetching data:", error);
-    });
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
 
-    // Intercept back button press
     const backAction = () => {
       if (cameFromNewUser && !isSaved) {
         alert("Please fill and save your profile before switching tabs.");
-        return true; 
+        return true;
       }
-      return false; 
+      return false;
     };
 
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
 
     return () => backHandler.remove();
   }, [cameFromNewUser, isSaved, currentId]);
+
+  const disconnect = () => {
+    const userStatusDatabaseRef = ref(
+      database,
+      `/status/${auth.currentUser.uid}`
+    );
+
+    set(userStatusDatabaseRef, {
+      state: "offline",
+      last_changed: serverTimestamp(),
+    })
+      .then(() => {
+        return signOut(auth);
+      })
+      .then(() => {
+        props.navigation.navigate("Auth");
+      })
+      .catch((error) => {
+        alert("Error signing out: " + error.message);
+      });
+  };
 
   const uploadImageToStorage = async (uriLocal) => {
     const response = await fetch(uriLocal);
     const blob = await response.blob();
     const arraybuffer = await new Response(blob).arrayBuffer();
 
-    // Upload to storage
-    await supabase.storage.from("WhatsappCloneStorage").upload(currentId, arraybuffer, {
-      upsert: true,
-    });
+    await supabase.storage
+      .from("WhatsappCloneStorage")
+      .upload(currentId, arraybuffer, {
+        upsert: true,
+      });
 
-    const { data } = supabase.storage.from("WhatsappCloneStorage").getPublicUrl(currentId);
+    const { data } = supabase.storage
+      .from("WhatsappCloneStorage")
+      .getPublicUrl(currentId);
     const result = data.publicUrl;
     return result;
   };
@@ -78,20 +116,26 @@ export default function MyProfile(props) {
 
     if (!result.canceled) {
       setUriLocalImage(result.assets[0].uri);
-      setisDefaultImage(false);
+      setIsDefaultImage(false);
       setIsSaved(false); // Mark as unsaved
     }
   };
 
   const saveProfile = async () => {
-    if (!nom || !pseudo || !telephone) {
+    if (!nom.trim() || !pseudo.trim() || !telephone.trim()) {
       alert("Please fill all fields before saving.");
       return;
     }
 
-    let urlImage = isDefaultImage ? null : await uploadImageToStorage(uriLocalImage);
+    if (!/^\d{8}$/.test(telephone)) {
+      alert("Phone number must be exactly 8 digits.");
+      return;
+    }
 
-    // Define the reference to save user profile
+    let urlImage = isDefaultImage
+      ? null
+      : await uploadImageToStorage(uriLocalImage);
+
     const ref_unprofil = ref(database, `/lesprefix/unprofil_${currentId}`);
 
     set(ref_unprofil, {
@@ -111,19 +155,21 @@ export default function MyProfile(props) {
       });
   };
 
-
-
   return (
-    <ImageBackground source={require("../../assets/imgbleu.jpg")} style={styles.container}>
+    <ImageBackground
+      source={require("../../assets/back1.jpg")}
+      imageStyle={{ opacity: 0.6 }}
+      style={styles.container}
+    >
       <Text style={styles.textstyle}>My Account</Text>
       <TouchableHighlight onPress={pickImage}>
         <Image
-          source={isDefaultImage ? require("../../assets/profil.png") : { uri: uriLocalImage }}
-          style={{
-            height: 200,
-            width: 200,
-            borderRadius: 100,
-          }}
+          source={
+            isDefaultImage
+              ? require("../../assets/profil.png")
+              : { uri: uriLocalImage }
+          }
+          style={styles.profileImage}
         />
       </TouchableHighlight>
       <TextInput
@@ -133,20 +179,20 @@ export default function MyProfile(props) {
           setIsSaved(false); // Mark as unsaved when any field changes
         }}
         textAlign="center"
-        placeholderTextColor="#fff"
-        placeholder="Nom"
+        placeholderTextColor="#95a5af"
+        placeholder="Full Name"
         keyboardType="default"
         style={styles.textinputstyle}
       />
       <TextInput
         value={pseudo}
         onChangeText={(text) => {
-          setpseudo(text);
+          setPseudo(text);
           setIsSaved(false); // Mark as unsaved when any field changes
         }}
         textAlign="center"
-        placeholderTextColor="#fff"
-        placeholder="Pseudo"
+        placeholderTextColor="#95a5af"
+        placeholder="Username"
         keyboardType="default"
         style={styles.textinputstyle}
       />
@@ -156,58 +202,91 @@ export default function MyProfile(props) {
           setTelephone(text);
           setIsSaved(false); // Mark as unsaved when any field changes
         }}
-        placeholderTextColor="#fff"
+        placeholderTextColor="#95a5af"
         textAlign="center"
-        placeholder="Numero"
+        placeholder="Phone Number"
         style={styles.textinputstyle}
       />
-      <TouchableHighlight
-        onPress={saveProfile}
-        activeOpacity={0.5}
-        underlayColor="#DDDDDD"
-        style={{
-          marginBottom: 10,
-          borderColor: "#00f",
-          borderWidth: 2,
-          backgroundColor: "#08f6",
-          textstyle: "italic",
-          fontSize: 24,
-          height: 60,
-          width: "50%",
-          justifyContent: "center",
-          alignItems: "center",
-          borderRadius: 5,
-          marginTop: 20,
-        }}
-      >
-        <Text style={{ color: "#FFF", fontSize: 24 }}>Save</Text>
-      </TouchableHighlight>
+      <View style={styles.buttonContainer}>
+        <TouchableHighlight
+          onPress={saveProfile}
+          activeOpacity={0.5}
+          underlayColor="#DDDDDD"
+          style={styles.saveButton}
+        >
+          <Text style={styles.buttonText}>Save</Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          onPress={disconnect}
+          activeOpacity={0.5}
+          underlayColor="#DDDDDD"
+          style={styles.disconnectButton}
+        >
+          <Text style={styles.buttonText}>Disconnect</Text>
+        </TouchableHighlight>
+      </View>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  textinputstyle: {
-    fontWeight: "bold",
-    backgroundColor: "#0004",
-    fontSize: 20,
-    color: "#fff",
-    width: "75%",
-    height: 50,
-    borderRadius: 10,
-    margin: 5,
+  container: {
+    flex: 1,
+    backgroundColor: "#111",
+    alignItems: "center",
+    justifyContent: "center",
   },
   textstyle: {
     fontSize: 40,
     fontFamily: "serif",
-    color: "#07f",
+    color: "#fff",
     fontWeight: "bold",
+    marginBottom: 15,
   },
-  container: {
-    color: "blue",
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
+  profileImage: {
+    height: 150,
+    width: 150,
+    borderRadius: 75,
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  textinputstyle: {
+    fontWeight: "bold",
+    backgroundColor: "#f4f4f4",
+    fontSize: 18,
+    color: "#000",
+    width: "80%",
+    height: 50,
+    borderRadius: 30,
+    margin: 10,
+    paddingLeft: 15,
+  },
+  buttonContainer: {
+    flexDirection: "row",
     justifyContent: "center",
+    gap: 10,
+    marginTop: 20,
+    width: "80%",
+  },
+  saveButton: {
+    backgroundColor: "#25D366",
+    borderRadius: 30,
+    height: 50,
+    width: "45%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  disconnectButton: {
+    backgroundColor: "#BB0A21",
+    borderRadius: 30,
+    height: 50,
+    width: "45%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
   },
 });

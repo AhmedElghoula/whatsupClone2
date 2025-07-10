@@ -1,12 +1,12 @@
-import { View, Text } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
-import ListProfile from '../screens/home/ListProfile'
-import MyProfile from './home/MyProfile';
-import Group from './home/Group';
+import { View, Text } from "react-native";
+import React, { useEffect, useState } from "react";
+import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
+import ListProfile from "../screens/home/ListProfile";
+import MyProfile from "./home/MyProfile";
+import Group from "./home/Group";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { app } from '../config'; 
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { app } from "../config";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const auth = getAuth(app);
 const Tab = createMaterialBottomTabNavigator();
@@ -17,7 +17,7 @@ export default function Home(props) {
   const [isProfileSaved, setIsProfileSaved] = useState(false);
 
   const handleProfileSave = (status) => {
-    setIsProfileSaved(status);  // This function is used to update the profile saved status
+    setIsProfileSaved(status); // This function is used to update the profile saved status
   };
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function Home(props) {
         component={ListProfile}
         initialParams={{ currentId: currentId }}
         listeners={{
-          tabPress: e => {
+          tabPress: (e) => {
             const cameFromNewUser = props.route.params.cameFromNewUser;
             if (cameFromNewUser && !isProfileSaved) {
               e.preventDefault();
@@ -51,8 +51,11 @@ export default function Home(props) {
       <Tab.Screen
         name="Group"
         component={Group}
+        initialParams={{
+          currentId: currentId,
+        }}
         listeners={{
-          tabPress: e => {
+          tabPress: (e) => {
             const cameFromNewUser = props.route.params.cameFromNewUser;
             if (cameFromNewUser && !isProfileSaved) {
               e.preventDefault();
@@ -71,7 +74,7 @@ export default function Home(props) {
           cameFromNewUser: props.route.params.cameFromNewUser,
         }}
         listeners={{
-          tabPress: e => {
+          tabPress: (e) => {
             const cameFromNewUser = props.route.params.cameFromNewUser;
             if (cameFromNewUser && !isProfileSaved) {
               e.preventDefault();
@@ -82,7 +85,9 @@ export default function Home(props) {
         options={{
           tabBarIcon: () => <Icon name="person" size={24} />,
         }}
-        children={(props) => <MyProfile {...props} onProfileSave={handleProfileSave} />}
+        children={(props) => (
+          <MyProfile {...props} onProfileSave={handleProfileSave} />
+        )}
       />
     </Tab.Navigator>
   );

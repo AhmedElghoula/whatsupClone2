@@ -1,4 +1,3 @@
-// auth.js
 import React, { useState } from "react";
 import {
   BackHandler,
@@ -10,6 +9,7 @@ import {
   TextInput,
   View,
   Alert,
+  Image,
 } from "react-native";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import {
@@ -50,15 +50,16 @@ export default function Auth(props) {
 
   return (
     <ImageBackground
-      source={require("../assets/background.jpg")}
+      source={require("../assets/back2.jpg")}
       style={styles.container}
     >
-      <View style={styles.container2}>
-        <Text style={styles.headerText}>Bienvenue</Text>
+      <View style={styles.authContainer}>
+        <Image source={require("../assets/aaad.png")} style={styles.logo} />
         <TextInput
           style={styles.textInputStyle}
           keyboardType="email-address"
           placeholder="Enter your email"
+          placeholderTextColor="#BDBDBD"
           value={email}
           onChangeText={setEmail}
         />
@@ -66,11 +67,13 @@ export default function Auth(props) {
           style={styles.textInputStyle}
           secureTextEntry
           placeholder="Enter your password"
+          placeholderTextColor="#BDBDBD"
           value={pwd}
           onChangeText={setPwd}
         />
         <View style={styles.buttonContainer}>
           <Button
+            color="#25D366" // WhatsApp green color
             onPress={() => {
               signInWithEmailAndPassword(auth, email, pwd)
                 .then(() => {
@@ -86,14 +89,14 @@ export default function Auth(props) {
                   Alert.alert("Error", error.message);
                 });
             }}
-            title="Submit"
+            title="Log In"
           />
           <Button
             onPress={() => {
               BackHandler.exitApp();
             }}
             title="Exit"
-            color="#bb0a21"
+            color="#bb0a21" // Red color for exit button
           />
         </View>
         <Text
@@ -105,7 +108,7 @@ export default function Auth(props) {
           Create new account?
         </Text>
       </View>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
     </ImageBackground>
   );
 }
@@ -113,40 +116,43 @@ export default function Auth(props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
     justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)", // Dark overlay for better readability
   },
-  container2: {
-    backgroundColor: "#212738",
+  authContainer: {
+    backgroundColor: "#333", // Dark card-like container
     alignItems: "center",
     justifyContent: "center",
-    height: 350,
     width: "80%",
+    padding: 20,
     borderRadius: 15,
+    boxShadow: "0 10px 20px rgba(0, 0, 0, 0.3)",
   },
-  headerText: {
-    fontSize: 34,
-    fontWeight: "bold",
-    fontStyle: "italic",
-    color: "#b7d2e7",
+  logo: {
+    width: 150,
+    height: 150,
+    marginBottom: 20,
   },
   textInputStyle: {
     height: 45,
-    width: "90%",
+    width: "100%",
+    backgroundColor: "#444", // Dark background for inputs
+    color: "#E4E4E4", // Light text color for inputs
+    marginBottom: 15,
+    borderRadius: 8,
     paddingLeft: 15,
-    backgroundColor: "white",
-    marginTop: 10,
-    marginBottom: 5,
-    borderRadius: 5,
+    fontSize: 16,
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: 22,
+    justifyContent: "center",
+    width: "100%",
     marginTop: 20,
   },
   textStyle: {
-    color: "white",
-    marginTop: 10,
+    color: "#25D366", // WhatsApp green color
+    marginTop: 15,
+    fontSize: 16,
   },
 });

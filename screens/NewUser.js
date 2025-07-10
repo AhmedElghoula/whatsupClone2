@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Button,
   ImageBackground,
@@ -14,11 +14,13 @@ import { app } from "../config";
 const auth = getAuth(app);
 
 export default function NewUser(props) {
-  let email, pwd;
+  const [email, setEmail] = useState("");
+  const [pwd, setPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
 
   return (
     <ImageBackground
-      source={require("../assets/background.jpg")}
+      source={require("../assets/back2.jpg")}
       style={styles.container}
     >
       <View style={styles.container2}>
@@ -28,34 +30,39 @@ export default function NewUser(props) {
           style={styles.textInputStyle}
           keyboardType="email-address"
           placeholder="Enter your email"
-          onChangeText={(text) => {
-            email = text;
-          }}
+          placeholderTextColor="#BDBDBD"
+          value={email}
+          onChangeText={(text) => setEmail(text)}
         />
 
         <TextInput
           style={styles.textInputStyle}
           secureTextEntry
           placeholder="Enter your password"
-          onChangeText={(text) => {
-            pwd = text;
-          }}
+          placeholderTextColor="#BDBDBD"
+          value={pwd}
+          onChangeText={(text) => setPwd(text)}
         />
 
         <TextInput
           style={styles.textInputStyle}
           secureTextEntry
           placeholder="Confirm your password"
-          onChangeText={(text) => {
-            pwd = text;
-          }}
+          placeholderTextColor="#BDBDBD"
+          value={confirmPwd}
+          onChangeText={(text) => setConfirmPwd(text)}
         />
 
         <View style={styles.buttonContainer}>
           <Button
             title="Submit"
-            color="#87A878"
+            color="#25D366" // WhatsApp green color
             onPress={() => {
+              if (pwd !== confirmPwd) {
+                alert("Passwords do not match!");
+                return;
+              }
+
               createUserWithEmailAndPassword(auth, email, pwd)
                 .then(() => {
                   const currentId = auth.currentUser.uid;
@@ -67,18 +74,18 @@ export default function NewUser(props) {
                   });
                 })
                 .catch((error) => {
-                  alert(error);
+                  alert(error.message);
                 });
             }}
           />
           <Button
             title="Exit"
-            color="#bb0a21"
+            color="#bb0a21" // Exit button with red color
             onPress={() => props.navigation.goBack()}
           />
         </View>
       </View>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
     </ImageBackground>
   );
 }
@@ -86,37 +93,39 @@ export default function NewUser(props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
+    backgroundColor: "#333", // Dark background
     justifyContent: "center",
+    alignItems: "center",
   },
   container2: {
-    backgroundColor: "#212738",
+    backgroundColor: "#212738", // Dark card-like container
     alignItems: "center",
     justifyContent: "center",
     height: 350,
     width: "80%",
     borderRadius: 15,
+    padding: 20,
   },
   headerText: {
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: "bold",
-    fontStyle: "italic",
-    color: "#b7d2e7",
-    marginBottom: 9,
+    color: "#E4E4E4", // Light text color for header
+    marginBottom: 15,
   },
   textInputStyle: {
     height: 45,
     width: "90%",
     paddingLeft: 15,
-    backgroundColor: "white",
+    backgroundColor: "#444", // Dark background for inputs
+    color: "#E4E4E4", // Light text color for inputs
     marginTop: 10,
     marginBottom: 5,
-    borderRadius: 5,
+    borderRadius: 10,
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: 22,
+    justifyContent: "center",
+    width: "100%",
     marginTop: 20,
   },
 });
