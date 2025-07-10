@@ -54,15 +54,15 @@ Want to run this on your machine? Here's how:
    ```
 
 3. **Set up your Firebase config**
-
-   - Create a Firebase project
-   - Add your config to `config/index.js`
-   - Don't forget to enable Realtime Database and Authentication!
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+   - Enable Realtime Database and Authentication
+   - Copy `config/index.template.js` to `config/index.js`
+   - Replace the placeholder values with your actual Firebase credentials
 
 4. **Configure Supabase for image storage**
-
-   - Create a Supabase project
-   - Add your Supabase credentials to the config
+   - Create a Supabase project at [Supabase](https://supabase.com/)
+   - Create a storage bucket named "WhatsappCloneStorage"
+   - Add your Supabase URL and anon key to `config/index.js`
 
 5. **Fire it up!**
 
@@ -71,6 +71,9 @@ Want to run this on your machine? Here's how:
    ```
 
 6. **Scan the QR code** with Expo Go and watch the magic happen! ✨
+
+### 🔒 Security Note
+The `config/` folder is excluded from git tracking to protect your sensitive Firebase and Supabase credentials. Never commit your actual config files to a public repository!
 
 ## 📂 Project Structure
 
