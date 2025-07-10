@@ -119,14 +119,7 @@ This project is open source and available under the [MIT License](LICENSE).
 - Thanks to the React Native community for being awesome
 - Coffee ☕ for keeping me awake during those late coding sessions
 
-## 📧 Get In Touch
 
-Questions? Ideas? Just want to say hi?
-
-- Email: your.email@example.com
-- Twitter: @yourusername
-
----
 
 **Built with ❤️ and lots of coffee by Ahmed**
 
